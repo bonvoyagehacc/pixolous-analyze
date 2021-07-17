@@ -1,14 +1,15 @@
 package analysis
 
 import (
+	"fmt"
 	"image"
 	"strconv"
 
 	"gocv.io/x/gocv"
 )
 
-var resizeWidth int = 8
-var resizeHeight int = 8
+const resizeWidth int = 8
+const resizeHeight int = 8
 
 func prepImage(img gocv.Mat) gocv.Mat {
 
@@ -22,37 +23,58 @@ func prepImage(img gocv.Mat) gocv.Mat {
 
 func average2D(table2D gocv.Mat) float32 {
 
-	var total int32
+	var total float32
 	for i := 0; i < resizeWidth; i++ {
 		for j := 0; j < resizeHeight; j++ {
-			total += table2D.GetIntAt(i, j)
+
+			total += table2D.GetFloatAt(i, j)
+
 		}
 	}
-	return float32(total) / float32(resizeWidth*resizeHeight)
+	return total / float32(resizeWidth*resizeHeight)
 }
-func hashTableA(table2D gocv.Mat, averageHash float32) gocv.Mat {
-	for i := 0; i < resizeWidth; i++ {
-		for j := 0; j < resizeHeight; j++ {
-			if table2D.GetFloatAt(i, j) > averageHash {
-				table2D.SetIntAt(i, j, 1)
+func pixelAverage(mat gocv.Mat) int {
+	total := 0
+	channel := gocv.Split(mat)[0]
+	for i := 0; i < resizeHeight; i++ {
+		for j := 0; j < resizeWidth; j++ {
+
+			total += int(channel.GetUCharAt(0, 0))
+
+		}
+	}
+
+	return total / (resizeWidth * resizeHeight)
+}
+
+func hashTableA(mat gocv.Mat, pixAvg int) [resizeHeight][resizeWidth]int {
+	channel := gocv.Split(mat)[0]
+	var hashTable [resizeHeight][resizeWidth]int
+
+	for i := 0; i < resizeHeight; i++ {
+		for j := 0; j < resizeWidth; j++ {
+			if channel.GetUCharAt(i, j) > uint8(pixAvg) {
+				hashTable[j][i] = 1
 
 			} else {
-				table2D.SetIntAt(i, j, 0)
+				hashTable[j][i] = 0
+
 			}
 		}
 	}
-	return table2D
+	return hashTable
 
 }
 
-func concatenation(table2D gocv.Mat) string {
+func concatenation(table [resizeHeight][resizeWidth]int) string {
 	var flattened string
-	for i := 0; i < resizeWidth; i++ {
-		for j := 0; j < resizeHeight; j++ {
-			flattened += strconv.Itoa(int(table2D.GetIntAt(i, j)))
+	for i := 0; i < resizeHeight; i++ {
+		for j := 0; j < resizeWidth; j++ {
+			flattened += strconv.Itoa(table[i][j])
 
 		}
 	}
+
 	result, _ := strconv.ParseInt(flattened, 2, 64)
 	return reverseString(strconv.FormatInt(result, 16))
 
@@ -70,12 +92,13 @@ func AHash(image gocv.Mat) string {
 
 	img := prepImage(image)
 
-	//avg := average2D(img)
+	avg := pixelAverage(img)
 
-	//hashedImg := hashTableA(img, avg)
+	table := hashTableA(img, avg)
 
-	//return concatenation(hashedImg)
+	return concatenation(table)
 
-	return strconv.Itoa(img.Cols())
+	fmt.Println(table)
+	return ""
 
 }
