@@ -141,7 +141,8 @@ func hashSimilarity(hash1 string, hash2 string) float64 {
 
 }
 
-func AHash(image gocv.Mat) string {
+func AHash(path string) string {
+	image := gocv.IMRead(path, gocv.IMReadColor)
 
 	img := prepImage(image)
 
