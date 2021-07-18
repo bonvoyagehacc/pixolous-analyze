@@ -143,6 +143,7 @@ func hashSimilarity(hash1 string, hash2 string) float64 {
 
 func AHash(path string) string {
 	image := gocv.IMRead(path, gocv.IMReadColor)
+	defer image.Close()
 
 	img := prepImage(image)
 
