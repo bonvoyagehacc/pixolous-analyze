@@ -35,6 +35,46 @@ func pixelAverage(mat gocv.Mat) int {
 
 	return total / (resizeWidth * resizeHeight)
 }
+func GetSimilarGrouped(pathToHash map[string]string) [][]string {
+	groups := make([][]string, 0)
+	visited := make([]string, 0)
+	for h := range pathToHash {
+		if contains(visited, h) {
+			continue
+
+		}
+		group := make([]string, 0)
+
+		group = append(group, h)
+
+		visited = append(visited, h)
+		for i := range pathToHash {
+			if contains(visited, i) {
+				continue
+			}
+			similarity := hashSimilarity(pathToHash[h], pathToHash[i])
+			if similarity > 70 {
+
+				group = append(group, i)
+				visited = append(visited, i)
+
+			}
+
+		}
+		groups = append(groups, group)
+
+	}
+	return groups
+
+}
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
 
 func hashTableA(mat gocv.Mat, pixAvg int) [resizeHeight][resizeWidth]int {
 	channel := gocv.Split(mat)[0]
@@ -84,7 +124,7 @@ func parseBinToHex(s string) string {
 // 	return string(byte_str)
 
 // }
-func HashSimilarity(hash1 string, hash2 string) float64 {
+func hashSimilarity(hash1 string, hash2 string) float64 {
 
 	result1, _ := strconv.ParseInt(hash1, 16, 64)
 	result2, _ := strconv.ParseInt(hash2, 16, 64)
