@@ -4,7 +4,7 @@ import (
 	"gocv.io/x/gocv"
 )
 
-func DetectBlur(path string, threshold float64) bool {
+func DetectBlur(path string) float64 {
 	img := gocv.IMRead(path, gocv.IMReadGrayScale)
 	defer img.Close()
 	laplacian := gocv.NewMat()
@@ -21,6 +21,6 @@ func DetectBlur(path string, threshold float64) bool {
 	gocv.MeanStdDev(laplacian, &dst, &dstStdDev)
 	variance := gocv.Split(dstStdDev)[0].GetDoubleAt(0, 0)
 	variance *= variance
-	return variance > threshold
+	return variance
 
 }
