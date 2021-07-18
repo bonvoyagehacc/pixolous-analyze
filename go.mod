@@ -1,4 +1,4 @@
-module analysis
+module github.com/bonvoyagehacc/pixolousAnalyze
 
 go 1.16
 

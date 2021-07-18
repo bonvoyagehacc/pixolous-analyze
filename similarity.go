@@ -1,9 +1,10 @@
-package analysis
+package pixolousAnalyze
 
 import (
 	"fmt"
 	"image"
 	"strconv"
+	"strings"
 
 	"gocv.io/x/gocv"
 )
@@ -21,18 +22,6 @@ func prepImage(img gocv.Mat) gocv.Mat {
 
 }
 
-func average2D(table2D gocv.Mat) float32 {
-
-	var total float32
-	for i := 0; i < resizeWidth; i++ {
-		for j := 0; j < resizeHeight; j++ {
-
-			total += table2D.GetFloatAt(i, j)
-
-		}
-	}
-	return total / float32(resizeWidth*resizeHeight)
-}
 func pixelAverage(mat gocv.Mat) int {
 	total := 0
 	channel := gocv.Split(mat)[0]
@@ -75,16 +64,40 @@ func concatenation(table [resizeHeight][resizeWidth]int) string {
 		}
 	}
 
-	result, _ := strconv.ParseInt(flattened, 2, 64)
-	return reverseString(strconv.FormatInt(result, 16))
+	return parseBinToHex(flattened)
 
 }
-func reverseString(str string) string {
-	byte_str := []rune(str)
-	for i, j := 0, len(byte_str)-1; i < j; i, j = i+1, j-1 {
-		byte_str[i], byte_str[j] = byte_str[j], byte_str[i]
+func parseBinToHex(s string) string {
+	ui, err := strconv.ParseUint(s, 2, 64)
+	if err != nil {
+		return "error"
 	}
-	return string(byte_str)
+
+	return fmt.Sprintf("%x", ui)
+}
+
+// func reverseString(str string) string {
+// 	byte_str := []rune(str)
+// 	for i, j := 0, len(byte_str)-1; i < j; i, j = i+1, j-1 {
+// 		byte_str[i], byte_str[j] = byte_str[j], byte_str[i]
+// 	}
+// 	return string(byte_str)
+
+// }
+func HashSimilarity(hash1 string, hash2 string) float64 {
+
+	result1, _ := strconv.ParseInt(hash1, 16, 64)
+	result2, _ := strconv.ParseInt(hash2, 16, 64)
+
+	size := len(hash1)
+	if size < len(hash2) {
+		size = len(hash2)
+	}
+	size *= 4
+
+	similitude := strconv.FormatInt(result1^result2, 2)
+	percentage := float64(strings.Count(similitude, "0")+size-len(similitude)) / float64(size)
+	return float64(percentage * 100)
 
 }
 
@@ -96,9 +109,7 @@ func AHash(image gocv.Mat) string {
 
 	table := hashTableA(img, avg)
 
-	return concatenation(table)
-
-	fmt.Println(table)
-	return ""
+	hash := concatenation(table)
+	return hash
 
 }
