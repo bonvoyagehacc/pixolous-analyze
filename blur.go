@@ -1,14 +1,12 @@
 package pixolousAnalyze
 
 import (
-	"fmt"
-
 	"gocv.io/x/gocv"
 )
 
-func DetectBlur(img gocv.Mat) {
-	//img := gocv.IMRead(path, gocv.IMReadGrayScale)
-	//defer img.Close()
+func DetectBlur(path string, threshold float64) bool {
+	img := gocv.IMRead(path, gocv.IMReadGrayScale)
+	defer img.Close()
 	laplacian := gocv.NewMat()
 	defer laplacian.Close()
 
@@ -21,7 +19,8 @@ func DetectBlur(img gocv.Mat) {
 	defer dstStdDev.Close()
 
 	gocv.MeanStdDev(laplacian, &dst, &dstStdDev)
-	fmt.Println("dst", dst.Cols(), dst.Rows())
-	fmt.Println("dstStdDev", dstStdDev.Cols(), dstStdDev.Rows())
+	variance := gocv.Split(dstStdDev)[0].GetDoubleAt(0, 0)
+	variance *= variance
+	return variance > threshold
 
 }
