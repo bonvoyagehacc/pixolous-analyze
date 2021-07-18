@@ -6,9 +6,9 @@ import (
 	"gocv.io/x/gocv"
 )
 
-func DetectBlur(path string) {
-	img := gocv.IMRead(path, gocv.IMReadGrayScale)
-	defer img.Close()
+func DetectBlur(img gocv.Mat) {
+	//img := gocv.IMRead(path, gocv.IMReadGrayScale)
+	//defer img.Close()
 	laplacian := gocv.NewMat()
 	defer laplacian.Close()
 
